@@ -1,0 +1,38 @@
+File and Directory Management
+	ls: List directory contents.
+	ls -l: List with detailed information.
+	ls -a: Include hidden files.
+	cd: Change directory.
+	cd ..: Move to the parent directory.
+	pwd: Print working directory.
+	mkdir: Create a new directory.
+	mkdir -p: Create parent directories as needed.
+	rmdir: Remove an empty directory.
+	rm: Remove files or directories.
+	rm -r: Recursively remove directories and their contents.
+	cp: Copy files or directories.
+	cp -r: Recursively copy directories.
+	mv: Move or rename files or directories.
+	find: Search for files in a directory hierarchy.
+	locate: Find files by name.
+	touch: Create an empty file or update a file’s timestamp.
+	ln: Create links between files.
+	ln -s: Create a symbolic link.
+File Viewing and Editing
+	cat: Concatenate and display file content.
+	less: View file content one screen at a time.
+	more: View file content one screen at a time (less advanced than less).
+	head: Display the first few lines of a file.
+	tail: Display the last few lines of a file.
+	tail -f: Follow the file as it grows.
+	nano: Simple text editor in the terminal.
+	vim: Advanced text editor in the terminal.
+	gedit: GUI text editor.
+	diff: Compare files line by line.
+	grep: Search text using patterns.
+	grep -r: Recursively search within a directory.
+File Permissions
+	chmod: Change file permissions.
+	chmod +x file: Make a file executable.
+	chown: Change file owner and group.
+	chgrp: Change group ownership of a file or directory.
