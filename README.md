@@ -1,2 +1,0 @@
-# bestpeers
-Daily update 
