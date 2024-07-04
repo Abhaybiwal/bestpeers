@@ -1,60 +1,88 @@
-from django.shortcuts import render,get_object_or_404
+# views.py
+from django.shortcuts import render, get_object_or_404,redirect
+from django.views.generic import ListView, TemplateView, DetailView, FormView, View
 from django.http import HttpResponse,JsonResponse
-from .models import Product,Contact,Cart
+from .models import *
+from .forms import ContactForm
 from math import ceil
-
-def index(request):
-    allProds = []
-    catprods = Product.objects.values('category', 'id')
-    # data = Product.objects.filter(category = "cat")
-    cats = {item['category'] for item in catprods}
-    for cat in cats:
-        prod = Product.objects.filter(category=cat)
-        n = len(prod)
-        nSlides = n // 4 + ceil((n / 4) - (n // 4))
-        allProds.append([prod, range(1, nSlides), nSlides])
+from django.contrib import messages
+from django.views.decorators.csrf import csrf_exempt
 
 
-    # params = {'no_of_slides':nSlides, 'range': range(1,nSlides),'product': products}
-    # allProds = [[products, range(1, nSlides), nSlides],
-    #             [products, range(1, nSlides), nSlides]]
-    params = {'allProds':allProds}
-    return render(request, 'shop/index.html', params)
+class IndexView(ListView):
+    model = Product
+    template_name = 'shop/index.html'
+    context_object_name = 'allProds'
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        allProds = []
+        catprods = Product.objects.values('category', 'id')
+        cats = {item['category'] for item in catprods}
+        for cat in cats:
+            prod = Product.objects.filter(category=cat)
+            n = len(prod)
+            nSlides = n // 4 + ceil((n / 4) - (n // 4))
+            allProds.append([prod, range(1, nSlides), nSlides])
+        context['allProds'] = allProds
+        return context
 
-def about(request):
-    return render(request,'shop/about.html')
+class AboutView(TemplateView):
+    template_name = 'shop/about.html'
 
+class ContactView(FormView):
+    template_name = 'shop/contact.html'
+    form_class = ContactForm
+    success_url = '/contact/'  # Redirect to the same contact page or wherever you want
 
-def contact(request):
-    if request.method=="POST":
-        print(request)
-        name=request.POST.get('name', '')
-        email=request.POST.get('email', '')
-        phone=request.POST.get('phone', '')
-        desc=request.POST.get('desc', '')
-        contact = Contact(name=name, email=email, phone=phone, desc=desc)
+    def form_valid(self, form):
+        # Save the data to the Contact model
+        contact = Contact(
+            name=form.cleaned_data['name'],
+            email=form.cleaned_data['email'],
+            phone=form.cleaned_data['phone'],
+            desc=form.cleaned_data['message']
+        )
         contact.save()
-    # elif request.method=="GET":
-    #     print(request.GET.get("a"))
-    return render(request, "shop/contact.html")
+        return super().form_valid(form)
 
+class TrackerView(TemplateView):
+    template_name = 'shop/tracker.html'
 
-def tracker(request):
-    return render(request,'shop/tracker.html')
+class SearchView(View):
+    def get(self, request):
+        return HttpResponse("we are at search")
 
+class ProductView(DetailView):
+    model = Product
+    template_name = 'shop/product.html'
+    context_object_name = 'product'
 
-def search(request):
-    return HttpResponse("we are at search")
+    def get_object(self):
+        myid = self.kwargs.get("myid")
+        return get_object_or_404(Product, id=myid)
+    
+    def post(self, request, *args, **kwargs):
 
+        product = self.get_object()
+        return redirect('add_to_cart', myid=product.id)
 
-def prodeuct_view(request,myid):
-    product = Product.objects.filter(id=myid)
-    context = {
-        'product': product[0]
-    }
-    return render(request,'shop/product.html',context)
+class CheckoutView(TemplateView):
+    template_name = 'shop/checkout.html'
+    
+    
+@csrf_exempt 
+def submit_data(request):
+    if request.method == 'POST':
+        quantity = int(request.POST.get('quantity'))
+        myid=int(request.POST.get('product_id'))
+        product = get_object_or_404(Product, id=myid)
+        cart_item, created = Cart.objects.get_or_create(user=request.user, product=product)
+        if not created:
+            cart_item.quantity =quantity
+            cart_item.save()
+        return JsonResponse({'message': 'Data received successfully'})
+    else:
+        return JsonResponse({'error': 'Invalid request method'})
 
-
-def checkout(request):
-    return render(request,'shop/checkout.html')
+    

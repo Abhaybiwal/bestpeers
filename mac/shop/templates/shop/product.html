@@ -1,25 +1,74 @@
 {% extends 'shop/basic.html' %}
 
-{% block title%} {{product.product_name}} - My Awesome Cart{% endblock %}
+{% block title %} {{ product.product_name }} - My Awesome Cart {% endblock %}
 {% block body %}
 <div class="container my-4">
     <div class="row">
-    <div class="col-md-4">
-    <div class="row">
-        <img src="/media/{{product.image}}" width="233px" height="385px">
-    </div>
-        <div class="row">
-            <button class="btn btn-primary mx-3">Buy Now</button>
-            <button class="btn btn-primary">Add To Cart</button>
+        <div class="col-md-4">
+            <div class="row">
+                <img src="/media/{{ product.image }}" width="233px" height="385px" alt="{{ product.product_name }}">
+            </div>
+            <div class="row mt-3">
+                <form id="yourForm" method="post">
+                <button class="btn btn-primary mx-3">Buy Now</button>
+                <div class="input-group my-2">
+                    <button class="btn btn-primary mx-3" type="button" onclick="decrementQuantity()">-</button>
+                    <input type="text" id="quantity-input" name="quantity" class="form-control text-center" value="1" min="1" readonly style="width:100px;">
+                    <button class="btn btn-primary mx-3" type="button" onclick="incrementQuantity()">+</button>
+                </div>
+                <input type="hidden" name="product_id" id="product-id" value="{{ product.id }}">                
+                <button type="submit" class="btn btn-primary" value="{{product.id}}" id="add-cart">Add To Cart</button>
+                </form>
+            </div>
         </div>
 
-    </div>
-
-    <div class="col-md-8">
-        <h5>{{product.product_name}}</h5>
-        <p><b>Rs.{{product.price}} </b></p>
-        <p>{{product.desc}}</p>
-    </div>
+        <div class="col-md-8">
+            <h5>{{ product.product_name }}</h5>
+            <p><b>Rs. {{ product.price }}</b></p>
+            <p>{{ product.desc }}</p>
+        </div>
     </div>
 </div>
 {% endblock %}
+{%block js%}
+function incrementQuantity() {
+    const quantityInput = document.getElementById('quantity-input');
+    let quantity = parseInt(quantityInput.value);
+    quantityInput.value = quantity + 1;
+}
+
+function decrementQuantity() {
+    const quantityInput = document.getElementById('quantity-input');
+    let quantity = parseInt(quantityInput.value);
+    if (quantity > 1) {
+        quantityInput.value = quantity - 1;
+    }
+}
+
+document.getElementById('yourForm').addEventListener('submit', function(event) {
+    event.preventDefault();  // Prevent the form from submitting normally
+
+    var formData = new FormData(this);  // Get form datasubmit_data
+    var xhr = new XMLHttpRequest();  // Create new XMLHttpRequest object
+
+    xhr.open('POST', '/shop/submit_data/', true);  // Specify the URL to send the request to
+    xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');  // Set header to identify AJAX request
+
+    xhr.onload = function() {
+        if (xhr.status >= 200 && xhr.status < 400) {
+            var response = JSON.parse(xhr.responseText);  // Parse JSON response
+            alert(response.message);  // Alert message received from backend
+            // Optionally, do something with the response
+        } else {
+            alert('Error: ' + xhr.statusText);  // Handle error
+        }
+    };
+
+    xhr.onerror = function() {
+        alert('Request failed');  // Handle connection error
+    };
+
+    xhr.send(formData);  // Send form data as FormData object
+});
+
+{%endblock%}

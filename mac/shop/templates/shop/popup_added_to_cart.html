@@ -1,0 +1,105 @@
+{% extends "shop/basic.html" %}
+
+{% block title %} Added To Cart {% endblock %}
+
+{% block css %}
+body {
+    font-family: Arial, sans-serif;
+}
+
+.hidden {
+    display: none;
+}
+
+.popup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80%;
+    max-width: 400px;
+    background-color: white;
+    border: 1px solid #ddd;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    animation: fadeIn 0.5s, slideDown 0.5s;
+}
+
+.popup-content {
+    padding: 20px;
+    text-align: center;
+}
+
+.close-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideDown {
+    from {
+        transform: translate(-50%, -40%);
+    }
+    to {
+        transform: translate(-50%, -50%);
+    }
+}
+
+@media (max-width: 600px) {
+    .popup {
+        width: 90%;
+    }
+}
+{% endblock %}
+
+{% block body %}
+{% if messages %}
+<ul class="messages">
+  {% for message in messages %}
+  <li id="message-{{ forloop.counter }}" class="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 mb-4">
+    {% if message.tags %}
+    <div class="font-bold">{{ message.tags }}</div>
+    {% endif %}
+    <div>{{ message }}</div>
+  </li>
+  {% endfor %}
+</ul>
+{% endif %}
+<div id="popup" class="popup hidden">
+    <div class="popup-content">
+        <span class="close-btn" onclick="closePopup()">&times;</span>
+        <h2>{{ message }}</h2>
+        <p>Product ID: <span>{{ product_id }}</span></p>
+        <p>Quantity: <span>{{ quantity }}</span></p>
+    </div>
+</div>
+<button onclick="showPopup()">Add to Cart</button>
+{% endblock %}
+
+{% block js %}
+function showPopup() {
+    const popup = document.getElementById('popup');
+    popup.classList.remove('hidden');
+}
+
+function closePopup() {
+    const popup = document.getElementById('popup');
+    popup.classList.add('hidden');
+}
+
+// Automatically close the popup after a few seconds (optional)
+setTimeout(() => {
+    closePopup();
+}, 3000);
+{% endblock %}

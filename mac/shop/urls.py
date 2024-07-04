@@ -1,14 +1,17 @@
+# urls.py
 from django.urls import path
-from . import views
+from .views import *
 
 app_name='shop'
 urlpatterns = [
-    path('',views.index,name='ShopHome'),
-    path('about/',views.about,name='About'),
-    path('contact/',views.contact,name='ContactUs'),
-    path('tracker/',views.tracker,name='TrackingStatus'),
-    path('search/',views.search,name='Search'),
-    path('products/<int:myid>/',views.prodeuct_view,name='ProductView'),
-    path('checkout/',views.checkout,name='Checkout'),
+    path('', IndexView.as_view(), name='index'),
+    path('about/', AboutView.as_view(), name='about'),
+    path('contact/', ContactView.as_view(), name='contact'),
+    path('tracker/', TrackerView.as_view(), name='tracker'),
+    path('search/', SearchView.as_view(), name='search'),
+    path('products/<int:myid>/', ProductView.as_view(), name='product'),
+    path('checkout/', CheckoutView.as_view(), name='checkout'),
+    path('submit_data/', submit_data,name="submit_data"),
+
 
 ]
