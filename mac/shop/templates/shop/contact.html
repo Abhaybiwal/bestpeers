@@ -1,19 +1,7 @@
 {% extends 'shop/basic.html' %}
 
 {% block title %}Contact Us - My Awesome Cart{% endblock %}
-
-{% block body %}
-<div class="container my-5">
-    <div class="contact-container mx-auto" style="max-width: 600px;">
-        <h1 class="text-center">Contact Us</h1>
-        <form action="/shop/contact/" method="post" class="mt-4">{% csrf_token %}
-            {{ form.as_p }}
-            <button type="submit" class="btn btn-custom btn-block">Submit</button>
-        </form>
-    </div>
-</div>
-
-<style>
+{%block css%}
     body {
         background-color: #e9ecef; /* Changed background color */
     }
@@ -46,8 +34,18 @@
     .form-control {
         width: 100%; /* Full width input fields */
     }
-</style>
+{%endblock%}
 
+{% block body %}
+<div class="container my-5">
+    <div class="contact-container mx-auto" style="max-width: 600px;">
+        <h1 class="text-center">Contact Us</h1>
+        <form action="/shop/contact/" method="post" class="mt-4">{% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn btn-custom btn-block">Submit</button>
+        </form>
+    </div>
+</div>
 <!-- jQuery and Bootstrap JS (only if not already included in your base template) -->
 <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>

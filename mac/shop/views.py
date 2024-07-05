@@ -5,8 +5,8 @@ from django.http import HttpResponse,JsonResponse
 from .models import *
 from .forms import ContactForm
 from math import ceil
-from django.contrib import messages
-from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.csrf import csrf_protect
+from django.urls import reverse_lazy
 
 
 class IndexView(ListView):
@@ -33,7 +33,7 @@ class AboutView(TemplateView):
 class ContactView(FormView):
     template_name = 'shop/contact.html'
     form_class = ContactForm
-    success_url = '/contact/'  # Redirect to the same contact page or wherever you want
+    success_url = reverse_lazy('thanks') 
 
     def form_valid(self, form):
         # Save the data to the Contact model
@@ -44,14 +44,17 @@ class ContactView(FormView):
             desc=form.cleaned_data['message']
         )
         contact.save()
-        return super().form_valid(form)
+        return redirect('thanks/')
+
 
 class TrackerView(TemplateView):
     template_name = 'shop/tracker.html'
 
+
 class SearchView(View):
     def get(self, request):
         return HttpResponse("we are at search")
+
 
 class ProductView(DetailView):
     model = Product
@@ -71,18 +74,31 @@ class CheckoutView(TemplateView):
     template_name = 'shop/checkout.html'
     
     
-@csrf_exempt 
+@csrf_protect
 def submit_data(request):
     if request.method == 'POST':
         quantity = int(request.POST.get('quantity'))
         myid=int(request.POST.get('product_id'))
         product = get_object_or_404(Product, id=myid)
-        cart_item, created = Cart.objects.get_or_create(user=request.user, product=product)
-        if not created:
-            cart_item.quantity =quantity
-            cart_item.save()
+        cart_item ,created= Cart.objects.get_or_create(user=request.user, product=product)
+        print(quantity)
+        cart_item.quantity = quantity
+        cart_item.save()
         return JsonResponse({'message': 'Data received successfully'})
     else:
         return JsonResponse({'error': 'Invalid request method'})
 
+
+class ThanksView(TemplateView):
+    template_name = 'shop/thanks.html'
+    
+
+class CartItems(ListView):
+    model = Cart
+    template_name = 'shop/cartitems.html'
+    context_object_name = 'cart_items'
+
+
+    def get_queryset(self):
+        return Cart.objects.all()
     
