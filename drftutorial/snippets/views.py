@@ -8,6 +8,10 @@ from rest_framework.decorators import api_view,action
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
 from rest_framework import renderers,viewsets
+from rest_framework.authentication import SessionAuthentication, BasicAuthentication, TokenAuthentication
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.views import APIView
+from rest_framework.authtoken.models import Token
 
 
 @api_view(['GET'])
@@ -16,6 +20,19 @@ def api_root(request, format=None):
         'users': reverse('user-list', request=request, format=format),
         'snippets': reverse('snippet-list', request=request, format=format)
     })
+
+class AuthView(APIView):
+    authentication_classes = [SessionAuthentication, BasicAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, format=None):
+        token, created = Token.objects.get_or_create(user=request.user)
+        content = {
+            'user': str(request.user),  # `django.contrib.auth.User` instance.
+            'auth': str(request.auth),  # None
+            'token': token.key,
+        }
+        return Response(content)
 
 # Next we're going to replace the SnippetList, SnippetDetail and SnippetHighlight view classes
 # class SnippetList(generics.ListCreateAPIView):
@@ -48,7 +65,8 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
     """
     queryset = User.objects.all()
     serializer_class = UserSerializer
-
+    permission_classes = [permissions.IsAuthenticated]
+    authentication_classes = [TokenAuthentication]
 
 # class SnippetHighlight(generics.GenericAPIView):
 #     queryset = Snippet.objects.all()
