@@ -12,6 +12,10 @@ from rest_framework.authentication import SessionAuthentication, BasicAuthentica
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.authtoken.models import Token
+from rest_framework import authentication,status
+from rest_framework import exceptions
+from .authentication import CustomAuthentication
+from django.contrib.auth import authenticate
 
 
 @api_view(['GET'])
@@ -20,6 +24,15 @@ def api_root(request, format=None):
         'users': reverse('user-list', request=request, format=format),
         'snippets': reverse('snippet-list', request=request, format=format)
     })
+
+
+
+class CustomAuthView(APIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [CustomAuthentication]
+
+    def get(self, request):
+        return Response({"message": "Hello, authenticated user!"}, status=status.HTTP_200_OK)
 
 class AuthView(APIView):
     authentication_classes = [SessionAuthentication, BasicAuthentication]
@@ -33,6 +46,7 @@ class AuthView(APIView):
             'token': token.key,
         }
         return Response(content)
+
 
 # Next we're going to replace the SnippetList, SnippetDetail and SnippetHighlight view classes
 # class SnippetList(generics.ListCreateAPIView):
