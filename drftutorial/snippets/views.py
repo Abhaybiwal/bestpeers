@@ -16,6 +16,8 @@ from rest_framework import authentication,status
 from rest_framework import exceptions
 from .authentication import CustomAuthentication
 from django.contrib.auth import authenticate
+from .models import Book
+from .serializers import BookSerializer
 
 
 @api_view(['GET'])
@@ -46,6 +48,45 @@ class AuthView(APIView):
             'token': token.key,
         }
         return Response(content)
+    
+
+class BookListView(APIView):
+    authentication_classes  = []
+    permission_classes = []
+    
+    def get(self,request):
+        books = Book.objects.all()
+        serializer = BookSerializer(books,many=True)
+        return Response(serializer.data)
+    
+    def post(self, request, *args, **kwargs):
+        serializer = BookSerializer(data=request.data, many=True)
+        if serializer.is_valid():
+            books = serializer.save()  # Calls the custom create method
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    def put(self, request, *args, **kwargs):
+        try:
+            book_instances = Book.objects.all()
+            serializer = BookSerializer(book_instances, data=request.data, many=True)
+            if serializer.is_valid():
+                serializer.save()  
+                return Response(serializer.data)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({"message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+class BookListUpdateView(APIView):
+    authentication_classes  = []
+    permission_classes = []
+    def put(self, request, *args, **kwargs):
+        book_instances = Book.objects.all()
+        serializer = BookSerializer(book_instances, data=request.data, many=True)
+        if serializer.is_valid():
+            serializer.save()  
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 # Next we're going to replace the SnippetList, SnippetDetail and SnippetHighlight view classes

@@ -1,7 +1,43 @@
 from rest_framework import serializers
 from snippets.models import Snippet, LANGUAGE_CHOICES, STYLE_CHOICES
 from django.contrib.auth.models import User
+from .models import Book
 
+class BookListSerializer(serializers.ListSerializer):
+    def create(self, validated_data):
+        books = [Book(**item) for item in validated_data]
+        return Book.objects.bulk_create(books)
+    
+    def update(self, instance, validated_data):
+        # Create maps for id -> instance and id -> data item
+        book_mapping = {book.id: book for book in instance}
+        data_mapping = {item['id']: item for item in validated_data}
+
+        # Perform creations and updates
+        ret = []
+        for book_id, data in data_mapping.items():
+            book = book_mapping.get(book_id, None)
+            if book is None:
+                ret.append(self.child.create(data))  # Create new book
+            else:
+                ret.append(self.child.update(book, data))  # Update existing book
+
+        # Perform deletions
+        for book_id, book in book_mapping.items():
+            if book_id not in data_mapping:
+                book.delete()  # Delete book not included in update data
+
+        return ret
+    
+
+class BookSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField()  # ID field to identify book instances
+
+    class Meta:
+        model = Book
+        fields = ['id', 'title', 'author', 'published_date']
+        list_serializer_class = BookListSerializer 
+    
 
 # class SnippetSerializer(serializers.Serializer):
 #     id = serializers.IntegerField(read_only=True)

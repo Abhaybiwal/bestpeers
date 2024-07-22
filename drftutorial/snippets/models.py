@@ -36,3 +36,10 @@ class Snippet(models.Model):
 
     class Meta:
         ordering = ['created']
+
+
+
+class Book(models.Model):
+    title = models.CharField(max_length=100)
+    author = models.CharField(max_length=100)
+    published_date = models.DateField()
