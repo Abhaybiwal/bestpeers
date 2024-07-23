@@ -16,8 +16,15 @@ from rest_framework import authentication,status
 from rest_framework import exceptions
 from .authentication import CustomAuthentication
 from django.contrib.auth import authenticate
-from .models import Book
-from .serializers import BookSerializer
+from .models import Book,UserProfile
+from .serializers import BookSerializer,UserProfileSerializer
+
+
+class UserProfileDetail(generics.RetrieveAPIView):
+    # authentication_classes=[CustomAuthentication]
+    # permission_classes=[IsAuthenticated]
+    queryset = UserProfile.objects.all()
+    serializer_class = UserProfileSerializer
 
 
 @api_view(['GET'])
@@ -30,8 +37,6 @@ def api_root(request, format=None):
 
 
 class CustomAuthView(APIView):
-    permission_classes = [IsAuthenticated]
-    authentication_classes = [CustomAuthentication]
 
     def get(self, request):
         return Response({"message": "Hello, authenticated user!"}, status=status.HTTP_200_OK)
@@ -51,8 +56,6 @@ class AuthView(APIView):
     
 
 class BookListView(APIView):
-    authentication_classes  = []
-    permission_classes = []
     
     def get(self,request):
         books = Book.objects.all()

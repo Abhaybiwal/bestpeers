@@ -1,7 +1,20 @@
 from rest_framework import serializers
 from snippets.models import Snippet, LANGUAGE_CHOICES, STYLE_CHOICES
 from django.contrib.auth.models import User
-from .models import Book
+from .models import Book,UserProfile
+from datetime import date
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    age = serializers.SerializerMethodField()
+
+    class Meta:
+        model = UserProfile
+        fields = ['user', 'bio', 'birthdate', 'age']
+
+    def get_age(self, obj):
+        today = date.today()
+        age = today.year - obj.birthdate.year - ((today.month, today.day) < (obj.birthdate.month, obj.birthdate.day))
+        return age
 
 class BookListSerializer(serializers.ListSerializer):
     def create(self, validated_data):

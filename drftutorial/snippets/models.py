@@ -38,8 +38,13 @@ class Snippet(models.Model):
         ordering = ['created']
 
 
-
 class Book(models.Model):
     title = models.CharField(max_length=100)
     author = models.CharField(max_length=100)
     published_date = models.DateField()
+
+
+class UserProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    bio = models.TextField()
+    birthdate = models.DateField()

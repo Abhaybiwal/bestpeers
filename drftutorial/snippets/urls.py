@@ -23,5 +23,7 @@ urlpatterns = [
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('books/', views.BookListView.as_view(), name='book-list'),
     path('books/update/', views.BookListUpdateView.as_view(), name='book-list-update'),
+    path('userprofile/<int:pk>/', views.UserProfileDetail.as_view(), name='userprofile-detail'),
+
 
 ]
