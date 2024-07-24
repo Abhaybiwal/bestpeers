@@ -1,8 +1,28 @@
 from rest_framework import serializers
 from snippets.models import Snippet, LANGUAGE_CHOICES, STYLE_CHOICES
 from django.contrib.auth.models import User
-from .models import Book,UserProfile
+from .models import Book,UserProfile,Track,Album,Artist
 from datetime import date
+
+
+class TrackSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Track
+        fields = ['id', 'title', 'duration']
+
+class AlbumSerializer(serializers.ModelSerializer):
+    tracks = serializers.StringRelatedField(many=True)
+
+    class Meta:
+        model = Album
+        fields = ['album_name', 'artist', 'tracks']
+
+class ArtistSerializer(serializers.ModelSerializer):
+    albums = AlbumSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Artist
+        fields = ['id', 'name', 'albums']
 
 class UserProfileSerializer(serializers.ModelSerializer):
     age = serializers.SerializerMethodField()

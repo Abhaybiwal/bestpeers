@@ -24,6 +24,8 @@ urlpatterns = [
     path('books/', views.BookListView.as_view(), name='book-list'),
     path('books/update/', views.BookListUpdateView.as_view(), name='book-list-update'),
     path('userprofile/<int:pk>/', views.UserProfileDetail.as_view(), name='userprofile-detail'),
+    path('artist/<int:pk>/', views.ArtistDetail.as_view(), name='artist-detail'),
+
 
 
 ]

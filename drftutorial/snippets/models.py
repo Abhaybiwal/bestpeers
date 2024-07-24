@@ -48,3 +48,26 @@ class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     bio = models.TextField()
     birthdate = models.DateField()
+
+
+class Artist(models.Model):
+    name = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.name
+    
+
+class Album(models.Model):
+    album_name = models.CharField(max_length=100)
+    artist = models.ForeignKey(Artist, related_name='albums', on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.album_name
+
+class Track(models.Model):
+    title = models.CharField(max_length=100)
+    duration = models.IntegerField()
+    album = models.ForeignKey(Album, related_name='tracks', on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.title

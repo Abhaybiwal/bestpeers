@@ -16,8 +16,8 @@ from rest_framework import authentication,status
 from rest_framework import exceptions
 from .authentication import CustomAuthentication
 from django.contrib.auth import authenticate
-from .models import Book,UserProfile
-from .serializers import BookSerializer,UserProfileSerializer
+from .models import Book,UserProfile,Artist
+from .serializers import BookSerializer,UserProfileSerializer,ArtistSerializer
 
 
 class UserProfileDetail(generics.RetrieveAPIView):
@@ -25,6 +25,11 @@ class UserProfileDetail(generics.RetrieveAPIView):
     # permission_classes=[IsAuthenticated]
     queryset = UserProfile.objects.all()
     serializer_class = UserProfileSerializer
+
+
+class ArtistDetail(generics.RetrieveAPIView):
+    queryset = Artist.objects.all()
+    serializer_class = ArtistSerializer
 
 
 @api_view(['GET'])
