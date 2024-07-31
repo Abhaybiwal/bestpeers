@@ -1,12 +1,16 @@
 # views.py
 from django.shortcuts import render, get_object_or_404,redirect
 from django.views.generic import ListView, TemplateView, DetailView, FormView, View
+from django.views.decorators.http import require_POST
 from django.http import HttpResponse,JsonResponse
 from .models import *
 from .forms import ContactForm
 from math import ceil
 from django.views.decorators.csrf import csrf_protect
 from django.urls import reverse_lazy
+from django.contrib.auth import login, authenticate
+from django.contrib.auth.views import LoginView
+from .forms import CustomUserCreationForm, CustomAuthenticationForm
 
 
 class IndexView(ListView):
@@ -89,6 +93,35 @@ def submit_data(request):
         return JsonResponse({'error': 'Invalid request method'})
 
 
+@require_POST
+def update_cart(request):
+    try:
+        action = request.POST.get('action')
+        product_id = request.POST.get('product_id')
+        if not product_id:
+            return JsonResponse({'success': False, 'message': 'Product ID not provided.'})
+
+        cart_item = get_object_or_404(Cart, product__id=product_id, user=request.user)
+
+        if action == 'delete':
+            cart_item.delete()
+            return JsonResponse({'success': True, 'message': 'Item deleted successfully.'})
+
+        elif action == 'update':
+            quantity = request.POST.get('quantity')
+            if not quantity or int(quantity) < 1:
+                return JsonResponse({'success': False, 'message': 'Invalid quantity.'})
+            cart_item.quantity = int(quantity)
+            cart_item.save()
+            return JsonResponse({'success': True, 'message': 'Quantity updated successfully.'})
+
+        return JsonResponse({'success': False, 'message': 'Invalid action.'})
+
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': str(e)})
+
+
+
 class ThanksView(TemplateView):
     template_name = 'shop/thanks.html'
     
@@ -101,4 +134,21 @@ class CartItems(ListView):
 
     def get_queryset(self):
         return Cart.objects.all()
+
+
+def signup_view(request):
+    if request.method == 'POST':
+        form = CustomUserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            return redirect('/shop')
+    else:
+        form = CustomUserCreationForm()
+    return render(request, 'shop/signup.html', {'form': form})
+
+class CustomLoginView(LoginView):
+    authentication_form = CustomAuthenticationForm
+    template_name = 'shop/login.html'
+    success_url = '/shop'
     
