@@ -14,7 +14,9 @@
             <form method="POST">
                 {% csrf_token %}
                 {{ form.as_p }}
+                <input type="hidden" name="redirect_to" value="{{ request.GET.redirect_to }}">
                 <button type="submit">Login</button>
+                <a href='/shop/signup'>Wanna create an account?</a>
             </form>
         </div>
     </div>

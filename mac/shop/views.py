@@ -11,12 +11,16 @@ from django.urls import reverse_lazy
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.views import LoginView
 from .forms import CustomUserCreationForm, CustomAuthenticationForm
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.decorators import login_required
 
 
-class IndexView(ListView):
+class IndexView(LoginRequiredMixin,ListView):
     model = Product
     template_name = 'shop/index.html'
     context_object_name = 'allProds'
+    login_url = '/shop/login/'
+    redirect_field_name = 'redirect_to'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -79,12 +83,14 @@ class CheckoutView(TemplateView):
     
     
 @csrf_protect
+@login_required
 def submit_data(request):
     if request.method == 'POST':
         quantity = int(request.POST.get('quantity'))
         myid=int(request.POST.get('product_id'))
         product = get_object_or_404(Product, id=myid)
-        cart_item ,created= Cart.objects.get_or_create(user=request.user, product=product)
+        user = request.user
+        cart_item ,created= Cart.objects.get_or_create(user=user, product=product)
         print(quantity)
         cart_item.quantity = quantity
         cart_item.save()
@@ -92,7 +98,7 @@ def submit_data(request):
     else:
         return JsonResponse({'error': 'Invalid request method'})
 
-
+@login_required
 @require_POST
 def update_cart(request):
     try:
@@ -150,5 +156,6 @@ def signup_view(request):
 class CustomLoginView(LoginView):
     authentication_form = CustomAuthenticationForm
     template_name = 'shop/login.html'
-    success_url = '/shop'
+    success_url = reverse_lazy('index')
+
     

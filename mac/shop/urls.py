@@ -1,6 +1,8 @@
 # urls.py
 from django.urls import path
 from .views import *
+from django.contrib.auth.views import LogoutView
+
 
 app_name='shop'
 urlpatterns = [
@@ -17,4 +19,6 @@ urlpatterns = [
     path('contact/thanks/', ThanksView.as_view(), name='thanks'),
     path('signup/', signup_view, name='signup'),
     path('login/', CustomLoginView.as_view(), name='login'),
+    path('logout/', LogoutView.as_view(template_name='shop/logged_out.html'), name='logout'),
+
 ]

@@ -10,7 +10,7 @@ class ProductCategory(models.Model):
 
     def __str__(self):
         return self.name
-
+    
 
 class Product(models.Model):
     product_id = models.AutoField
@@ -60,7 +60,7 @@ class CustomUser(AbstractUser):
     
 
 class Cart(models.Model):
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.IntegerField(default=1)
 
