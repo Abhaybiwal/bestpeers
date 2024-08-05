@@ -1,8 +1,8 @@
-
-
 import os
 from pathlib import Path
 from dotenv import load_dotenv
+
+
 
 # Load environment variables from the .env file
 load_dotenv()
@@ -19,7 +19,13 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
+
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:8000',
+    'https://3c49-60-254-111-210.ngrok-free.app',
+]
+
 
 # Application definition
 
@@ -48,7 +54,7 @@ ROOT_URLCONF = 'mac.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'shop', 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -125,3 +131,11 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_URL = '/shop/login/'
 LOGIN_REDIRECT_URL = '/shop'
 LOGOUT_REDIRECT_URL = '/shop/login/'
+
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT=587
+EMAIL_USE_TLS=True
+EMAIL_HOST_USER="abhaybcoder2@gmail.com"
+EMAIL_HOST_PASSWORD="sqkq zakw kyzn xvxt"

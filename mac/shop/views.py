@@ -1,5 +1,6 @@
 # views.py
 from django.shortcuts import render, get_object_or_404,redirect
+from django.contrib.auth.views import PasswordChangeView
 from django.views.generic import ListView, TemplateView, DetailView, FormView, View
 from django.views.decorators.http import require_POST
 from django.http import HttpResponse,JsonResponse
@@ -10,9 +11,12 @@ from django.views.decorators.csrf import csrf_protect
 from django.urls import reverse_lazy
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.views import LoginView
-from .forms import CustomUserCreationForm, CustomAuthenticationForm
+from .forms import CustomUserCreationForm, CustomAuthenticationForm,CustomPasswordChangeForm
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.views import PasswordResetView
+from django.contrib.auth.forms import PasswordResetForm
+
 
 
 class IndexView(LoginRequiredMixin,ListView):
@@ -37,6 +41,19 @@ class IndexView(LoginRequiredMixin,ListView):
 
 class AboutView(TemplateView):
     template_name = 'shop/about.html'
+
+
+class CustomPasswordResetView(PasswordResetView):
+    template_name = 'shop/password_reset_form.html'
+    form_class = PasswordResetForm
+    success_url = reverse_lazy('shop:password_reset_done')
+
+
+class CustomPasswordChangeView(LoginRequiredMixin,PasswordChangeView):
+    form_class = CustomPasswordChangeForm
+    template_name = 'shop/password_change_form.html'
+    success_url = reverse_lazy('shop:password_change_done')
+
 
 class ContactView(FormView):
     template_name = 'shop/contact.html'
@@ -157,5 +174,7 @@ class CustomLoginView(LoginView):
     authentication_form = CustomAuthenticationForm
     template_name = 'shop/login.html'
     success_url = reverse_lazy('index')
+
+
 
     
