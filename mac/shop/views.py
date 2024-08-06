@@ -16,6 +16,8 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import PasswordResetView
 from django.contrib.auth.forms import PasswordResetForm
+from django.contrib.auth import views as auth_views
+
 
 
 
@@ -53,6 +55,22 @@ class CustomPasswordChangeView(LoginRequiredMixin,PasswordChangeView):
     form_class = CustomPasswordChangeForm
     template_name = 'shop/password_change_form.html'
     success_url = reverse_lazy('shop:password_change_done')
+
+
+# class CustomPasswordResetView(auth_views.PasswordResetView):
+#     template_name = 'shop/password_reset_form.html'
+#     email_template_name = 'registration/password_reset_email.html'
+#     success_url = reverse_lazy('password_reset_done')
+
+class CustomPasswordResetDoneView(auth_views.PasswordResetDoneView):
+    template_name = 'shop/password_reset_done.html'
+
+class CustomPasswordResetConfirmView(auth_views.PasswordResetConfirmView):
+    template_name = 'shop/password_reset_confirm.html'
+    success_url = reverse_lazy('shop:password_reset_complete')
+
+class CustomPasswordResetCompleteView(auth_views.PasswordResetCompleteView):
+    template_name = 'shop/password_reset_complete.html'
 
 
 class ContactView(FormView):
@@ -108,7 +126,6 @@ def submit_data(request):
         product = get_object_or_404(Product, id=myid)
         user = request.user
         cart_item ,created= Cart.objects.get_or_create(user=user, product=product)
-        print(quantity)
         cart_item.quantity = quantity
         cart_item.save()
         return JsonResponse({'message': 'Data received successfully'})
@@ -149,14 +166,10 @@ class ThanksView(TemplateView):
     template_name = 'shop/thanks.html'
     
 
-class CartItems(ListView):
-    model = Cart
-    template_name = 'shop/cartitems.html'
-    context_object_name = 'cart_items'
-
-
-    def get_queryset(self):
-        return Cart.objects.all()
+class CartItems(View):
+    def get(self, request):
+        cart_items = Cart.objects.filter(user=request.user)
+        return render(request, "shop/cartitems.html", {'cart_items': cart_items})
 
 
 def signup_view(request):
@@ -174,6 +187,8 @@ class CustomLoginView(LoginView):
     authentication_form = CustomAuthenticationForm
     template_name = 'shop/login.html'
     success_url = reverse_lazy('index')
+
+    
 
 
 
