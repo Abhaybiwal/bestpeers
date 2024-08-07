@@ -1,5 +1,6 @@
-# views.py
 from django.shortcuts import render, get_object_or_404,redirect
+from django.contrib.auth import get_user_model
+from django.urls import reverse
 from django.contrib.auth.views import PasswordChangeView
 from django.views.generic import ListView, TemplateView, DetailView, FormView, View
 from django.views.decorators.http import require_POST
@@ -17,8 +18,17 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import PasswordResetView
 from django.contrib.auth.forms import PasswordResetForm
 from django.contrib.auth import views as auth_views
+from django.contrib.auth.models import User
+from rest_framework import generics, status
+from rest_framework.response import Response
+from rest_framework.permissions import AllowAny,IsAuthenticated
+from rest_framework.views import APIView
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.views import TokenObtainPairView
+from .serializers import LoginSerializer, CustomTokenObtainPairSerializer,SignupSerializer
 
 
+CustomUser = get_user_model()
 
 
 class IndexView(LoginRequiredMixin,ListView):
@@ -172,24 +182,97 @@ class CartItems(View):
         return render(request, "shop/cartitems.html", {'cart_items': cart_items})
 
 
-def signup_view(request):
-    if request.method == 'POST':
-        form = CustomUserCreationForm(request.POST)
-        if form.is_valid():
-            user = form.save()
-            login(request, user)
-            return redirect('/shop')
-    else:
-        form = CustomUserCreationForm()
-    return render(request, 'shop/signup.html', {'form': form})
+# def signup_view(request):
+#     if request.method == 'POST':
+#         form = CustomUserCreationForm(request.POST)
+#         if form.is_valid():
+#             user = form.save()
+#             login(request, user)
+#             return redirect('/shop')
+#     else:
+#         form = CustomUserCreationForm()
+#     return render(request, 'shop/signup.html', {'form': form})
 
-class CustomLoginView(LoginView):
-    authentication_form = CustomAuthenticationForm
-    template_name = 'shop/login.html'
-    success_url = reverse_lazy('index')
+class LoginView(APIView):
+    def get(self, request):
+        return render(request, 'shop/login.html')
 
+    def post(self, request):
+        try:
+            data = request.POST
+            serializer = LoginSerializer(data=data)
+            if serializer.is_valid():
+                username = serializer.validated_data.get('username')
+                password = serializer.validated_data['password']
+
+                # Authentication
+                user = authenticate(username=username, password=password)
+
+                if user is None:
+                    return render(request, 'shop/login.html', {'error': 'Invalid credentials.'})
+                
+                # Generate tokens
+                refresh = RefreshToken.for_user(user)
+                access_token = refresh.access_token
+
+                # Save tokens in session or cookies
+                request.session['access_token'] = str(access_token)
+                request.session['refresh_token'] = str(refresh)
+                return redirect(reverse('shop:index'))
+            return render(request, 'shop/login.html', {'errors': serializer.errors})
+        
+        except Exception as e:
+            return render(request, 'shop/login.html', {'error': str(e), 'details': str(e)})
+
+
+
+class SignupView(APIView):
+    def get(self, request):
+        return render(request, 'shop/signup.html')
+
+    def post(self, request):
+        try:
+            data = request.POST
+            serializer = SignupSerializer(data=data)
+            if serializer.is_valid():
+                user = serializer.save()
+
+                # Generate tokens
+                refresh = RefreshToken.for_user(user)
+                access_token = refresh.access_token
+
+                # Save tokens in session or cookies
+                request.session['access_token'] = str(access_token)
+                request.session['refresh_token'] = str(refresh)
+
+                return redirect(reverse('home'))
+
+            return render(request, 'shop/signup.html', {'errors': serializer.errors})
+        
+        except Exception as e:
+            return render(request, 'shop/signup.html', {'error': 'Something went wrong.', 'details': str(e)})
+class CustomTokenObtainPairView(TokenObtainPairView):
+    serializer_class = CustomTokenObtainPairSerializer
+
+class LogoutView(generics.GenericAPIView):
+    def post(self, request):
+        try:
+            refresh_token = request.data["refresh"]
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+            return Response(status=status.HTTP_205_RESET_CONTENT)
+        except Exception as e:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        
+
+class ProtectedView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        content = {'message': 'This is a protected view'}
+        return Response(content)
     
-
-
-
-    
+class ShowApi(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        return Response({'message': 'Hello, world!'})

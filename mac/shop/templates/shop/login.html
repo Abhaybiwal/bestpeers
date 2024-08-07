@@ -1,25 +1,27 @@
-{% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
 </head>
 <body>
-    <div class="container">
-        <div class="form-container">
-            <h2>Login</h2>
-            <form method="POST">
-                {% csrf_token %}
-                {{ form.as_p }}
-                <input type="hidden" name="redirect_to" value="{{ request.GET.redirect_to }}">
-                <button type="submit">Login</button>
-                <a href='/shop/signup'>Wanna create an account?</a>
-                <a href='/shop/password_reset'>Forgot password?</a>
-            </form>
-        </div>
-    </div>
+    <h2>Login</h2>
+    {% if error %}
+        <p style="color: red;">{{ error }}</p>
+    {% endif %}
+    {% if errors %}
+        <ul style="color: red;">
+            {% for field, error in errors.items %}
+                <li>{{ field }}: {{ error.0 }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+    <form method="post">
+        {% csrf_token %}
+        <label for="username">Username:</label><br>
+        <input type="text" id="username" name="username" required><br>
+        <label for="password">Password:</label><br>
+        <input type="password" id="password" name="password" required><br>
+        <input type="submit" value="Login">
+    </form>
 </body>
 </html>
