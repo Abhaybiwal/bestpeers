@@ -1,27 +1,50 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
 </head>
 <body>
-    <h2>Login</h2>
-    {% if error %}
-        <p style="color: red;">{{ error }}</p>
-    {% endif %}
-    {% if errors %}
-        <ul style="color: red;">
-            {% for field, error in errors.items %}
-                <li>{{ field }}: {{ error.0 }}</li>
-            {% endfor %}
-        </ul>
-    {% endif %}
-    <form method="post">
+    <form id="login-form" method="post">
         {% csrf_token %}
-        <label for="username">Username:</label><br>
-        <input type="text" id="username" name="username" required><br>
-        <label for="password">Password:</label><br>
-        <input type="password" id="password" name="password" required><br>
-        <input type="submit" value="Login">
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" required>
+        <br>
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required>
+        <br>
+        <button type="submit">Login</button>
     </form>
+    <div id="error-message">{{ error }}</div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            const accessToken = '{{ access_token }}';
+            console.log(accessToken)
+            // Set Authorization header for future requests
+            $.ajaxSetup({
+                beforeSend: function(xhr, settings) {
+                    if (accessToken) {
+                        console.log(accessToken)
+                        xhr.setRequestHeader('Authorization', 'Bearer ' + accessToken);
+                    }
+                }
+            });
+        });
+    </script>
+    {% if access_token %}
+    <script>
+        // Directly use the tokens in JavaScript
+        const accessToken = '{{ access_token }}';
+        const refreshToken = '{{ refresh_token }}';
+        console.log(accessToken)
+        console.log(refreshToken)
+        // Redirect to the home page
+        {% comment %} window.location.href = '/shop/'; {% endcomment %}
+    </script>
+    {% endif %}
+
 </body>
 </html>

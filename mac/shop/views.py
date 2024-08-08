@@ -26,19 +26,34 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
 from .serializers import LoginSerializer, CustomTokenObtainPairSerializer,SignupSerializer
+from rest_framework_simplejwt.authentication import JWTAuthentication
+
+
 
 
 CustomUser = get_user_model()
 
 
-class IndexView(LoginRequiredMixin,ListView):
+class IndexView(APIView):
     model = Product
     template_name = 'shop/index.html'
     context_object_name = 'allProds'
-    login_url = '/shop/login/'
-    redirect_field_name = 'redirect_to'
+    authentication_classes = [JWTAuthentication]
+    permission_classes=[IsAuthenticated]
+
+    # permission_classes=[IsAuthenticated]
+      
+    def get(self, request, *args, **kwargs):
+        
+        # Check if the user is authenticated
+        if not request.user.is_authenticated:
+            return redirect(reverse('shop:login'))
+
+        return super().get(request, *args, **kwargs)
+
 
     def get_context_data(self, **kwargs):
+        
         context = super().get_context_data(**kwargs)
         allProds = []
         catprods = Product.objects.values('category', 'id')
@@ -194,6 +209,7 @@ class CartItems(View):
 #     return render(request, 'shop/signup.html', {'form': form})
 
 class LoginView(APIView):
+    permission_classes=[AllowAny]
     def get(self, request):
         return render(request, 'shop/login.html')
 
@@ -211,14 +227,18 @@ class LoginView(APIView):
                 if user is None:
                     return render(request, 'shop/login.html', {'error': 'Invalid credentials.'})
                 
-                # Generate tokens
+                login(request, user)
+                
                 refresh = RefreshToken.for_user(user)
                 access_token = refresh.access_token
 
-                # Save tokens in session or cookies
-                request.session['access_token'] = str(access_token)
-                request.session['refresh_token'] = str(refresh)
-                return redirect(reverse('shop:index'))
+                # Pass tokens to the template
+                context = {
+                    'access_token': str(access_token),
+                    'refresh_token': str(refresh),
+                }
+
+                return render(request,'shop/login.html',context)
             return render(request, 'shop/login.html', {'errors': serializer.errors})
         
         except Exception as e:
@@ -245,25 +265,49 @@ class SignupView(APIView):
                 request.session['access_token'] = str(access_token)
                 request.session['refresh_token'] = str(refresh)
 
-                return redirect(reverse('home'))
+                return redirect(reverse('shop:index'))
 
             return render(request, 'shop/signup.html', {'errors': serializer.errors})
         
         except Exception as e:
             return render(request, 'shop/signup.html', {'error': 'Something went wrong.', 'details': str(e)})
+        
+
+
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
 
-class LogoutView(generics.GenericAPIView):
+# class LogoutView(generics.GenericAPIView):
+#     def post(self, request):
+#         try:
+#             refresh_token = request.data["refresh"]
+#             token = RefreshToken(refresh_token)
+#             token.blacklist()
+#             return Response(status=status.HTTP_205_RESET_CONTENT)
+#         except Exception as e:
+#             return Response(status=status.HTTP_400_BAD_REQUEST)
+        
+
+class LogoutView(APIView):
+    authentication_classes = [JWTAuthentication]
+
     def post(self, request):
         try:
-            refresh_token = request.data["refresh"]
+            refresh_token = request.data.get("refresh_token")
             token = RefreshToken(refresh_token)
             token.blacklist()
-            return Response(status=status.HTTP_205_RESET_CONTENT)
+
+            # Clear session tokens if stored
+            if 'access_token' in request.session:
+                del request.session['access_token']
+            if 'refresh_token' in request.session:
+                del request.session['refresh_token']
+
+            # Redirect to login page
+            return redirect('login')
         except Exception as e:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
-        
+            return Response(status=status.HTTP_400_BAD_REQUEST, data={"detail": str(e)})
+
 
 class ProtectedView(APIView):
     permission_classes = [IsAuthenticated]

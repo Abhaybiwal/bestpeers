@@ -26,5 +26,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('shop/',include('shop.urls')),
     path('', LoginView.as_view(), name='login'),
+    path('show/',ShowApi.as_view(),name='show')
 
 ] + static(settings.MEDIA_URL,document_root=settings.MEDIA_ROOT)

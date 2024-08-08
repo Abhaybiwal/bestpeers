@@ -15,7 +15,7 @@
             {% endfor %}
         </ul>
     {% endif %}
-    <form method="post" action="{% url 'signup' %}">
+    <form method="post" action="{% url 'shop:signup' %}">
         {% csrf_token %}
         <label for="username">Username:</label><br>
         <input type="text" id="username" name="username" required><br>
