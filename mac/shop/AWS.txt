@@ -1,0 +1,46 @@
+AWS ec2
+aws lambda
+RDS
+
+boto3 
+
+git
+fetch
+merge
+rebase
+cherry pick
+delete -d -D
+commit reset
+git reset --soft HEAD^^
+force push -f
+main
+git pull
+git checkout main
+
+git pull origin main
+
+git checkout -b ""
+
+django celery
+task
+
+
+
+git pull origin main
+git checkout -b branch name
+git stash
+git checkout main
+git pull origin main
+git checkout branch nane
+git merge main
+Resolve conflicts 
+git add filename of the conflict file
+git commit -m "Merge main branch into branch name"
+git stash pop
+git  
+
+
+
+server -1 mysql
+other process 100
+appli

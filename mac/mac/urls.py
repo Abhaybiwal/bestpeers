@@ -19,13 +19,13 @@ from django.urls import path,include
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.auth import views as auth_views
-from shop.views import LoginView, ShowApi
+from shop.views import login, ShowApi
 
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('shop/',include('shop.urls')),
-    path('', LoginView.as_view(), name='login'),
+    path('', login, name='login'),
     path('show/',ShowApi.as_view(),name='show')
 
 ] + static(settings.MEDIA_URL,document_root=settings.MEDIA_ROOT)

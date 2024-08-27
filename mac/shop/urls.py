@@ -18,10 +18,11 @@ urlpatterns = [
     path('cartitems/',CartItems.as_view(), name='cartitems'),
     path('contact/thanks/', ThanksView.as_view(), name='thanks'),
     
-    path('logout/', LogoutView.as_view(), name='logout'),
+    path('logout/', logout, name='logout'),
 
     path('signup/', SignupView.as_view(), name='signup'),
-    path('login/',LoginView.as_view(),name="login"),
+    path('login_do/',login_do,name="login_do"),
+    path('login_success/',login_success,name="login_success"),
     # path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('protected/', ProtectedView.as_view(), name='protected'),
 
